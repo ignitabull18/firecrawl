@@ -1,19 +1,34 @@
 FROM node:18-slim
 
-WORKDIR /usr/src/app
-COPY package*.json ./
-RUN npm install
+# Install essential dependencies first
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-COPY . .
+WORKDIR /usr/src/app
+
+# Copy and install dependencies first (better caching)
+COPY package*.json ./
+RUN npm install --no-audit
 
 # Install Playwright dependencies
-RUN npx playwright install --with-deps
+RUN npx playwright install --with-deps chromium
 
+# Copy source code
+COPY . .
+
+# Build the application
 RUN npm run build
 
-ARG PORT
+# Set up port
+ARG PORT=3000
 ENV PORT=${PORT}
-
 EXPOSE ${PORT}
 
+# Set healthcheck
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:${PORT}/health || exit 1
+
+# Run the application
 CMD [ "npm", "start" ]
