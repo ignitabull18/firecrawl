@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import { chromium, Browser, BrowserContext, Route, Request as PlaywrightRequest, Page } from 'playwright';
@@ -11,6 +13,10 @@ const app = express();
 const port = process.env.PORT || 3003;
 
 app.use(bodyParser.json());
+
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).send('OK');
+});
 
 const BLOCK_MEDIA = (process.env.BLOCK_MEDIA || 'False').toUpperCase() === 'TRUE';
 
