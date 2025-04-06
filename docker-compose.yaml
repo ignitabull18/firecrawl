@@ -57,6 +57,12 @@ services:
       BLOCK_MEDIA: ${BLOCK_MEDIA}
     networks:
       - backend
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
   api:
     <<: *common-service
@@ -66,11 +72,19 @@ services:
       PORT: ${INTERNAL_PORT:-3003}
       FLY_PROCESS_GROUP: app
     depends_on:
-      - redis
-      - playwright-service
+      redis:
+        condition: service_healthy
+      playwright-service:
+        condition: service_healthy
     ports:
       - "${PORT:-3003}:${INTERNAL_PORT:-3003}"
     command: [ "pnpm", "run", "start:production" ]
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:${INTERNAL_PORT:-3003}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   worker:
     <<: *common-service
@@ -78,10 +92,19 @@ services:
       <<: *common-env
       FLY_PROCESS_GROUP: worker
     depends_on:
-      - redis
-      - playwright-service
-      - api
+      redis:
+        condition: service_healthy
+      playwright-service:
+        condition: service_healthy
+      api:
+        condition: service_healthy
     command: [ "pnpm", "run", "workers" ]
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "workers"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   redis:
     # NOTE: If you want to use Valkey (open source) instead of Redis (source available),
@@ -89,10 +112,15 @@ services:
     # Using Valkey with Firecrawl is untested and not guaranteed to work. Use with caution.
     image: redis:alpine
     # image: valkey/valkey:alpine
-
     networks:
       - backend
     command: redis-server --bind 0.0.0.0
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
 
   # UI service (optional, can be commented out if not needed)
   ui:
@@ -105,9 +133,16 @@ services:
       - ./apps/ui/ingestion-ui:/app
       - /app/node_modules
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     networks:
       - backend
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5173"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
 networks:
   backend:

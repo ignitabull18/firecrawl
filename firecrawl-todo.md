@@ -37,6 +37,7 @@
 - [ ] Implement data retention policies
 
 ## Monitoring & Maintenance
+- [x] Set up Docker health checks for all services
 - [ ] Set up logging
 - [ ] Create monitoring for service availability
 - [ ] Implement resource usage alerts
