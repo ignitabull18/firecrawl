@@ -1,0 +1,60 @@
+# Deploying Firecrawl on Coolify
+
+This is a fork of the [Firecrawl](https://firecrawl.dev) project, configured for deployment on Coolify.
+
+## Deployment Steps
+
+### 1. Prerequisites
+- A Coolify instance up and running
+- Git repository access (this repository)
+
+### 2. Configuration
+The main components to deploy are:
+- Redis database
+- Playwright service (for browser automation)
+- API service (main application)
+- Worker service (background job processing)
+
+### 3. Coolify Configuration
+
+#### Redis
+1. Create a Redis database resource in Coolify
+2. Note the internal connection URL for use in the API and Worker services
+
+#### Playwright Service
+1. Create a new application using this Git repository
+2. Set base directory to `/apps/playwright-service-ts/`
+3. Set build pack to Dockerfile
+4. Add environment variable: `PORT=3000`
+
+#### API Service
+1. Create a new application using this Git repository
+2. Set base directory to `/apps/api/`
+3. Set build pack to Dockerfile
+4. Set start command to `pnpm run start:production`
+5. Configure environment variables:
+   - `HOST=0.0.0.0`
+   - `PORT=3002`
+   - `REDIS_URL=[Redis Internal Connection URL]`
+   - `REDIS_RATE_LIMIT_URL=[Redis Internal Connection URL]`
+   - `PLAYWRIGHT_MICROSERVICE_URL=[Playwright Service Internal URL]/scrape`
+   - `USE_DB_AUTHENTICATION=false`
+   - `BULL_AUTH_KEY=[Your Secret Key]`
+6. Expose port 3002
+
+#### Worker Service
+1. Create a new application using this Git repository
+2. Set base directory to `/apps/api/`
+3. Set build pack to Dockerfile
+4. Set start command to `pnpm run workers`
+5. Configure the same environment variables as the API service
+
+### 4. Testing
+After deployment, test the API with:
+```bash
+curl -X POST http://[your-domain]/v1/crawl \
+    -H 'Content-Type: application/json' \
+    -d '{"url": "https://firecrawl.dev"}'
+```
+
+The Bull Queue Manager UI should be accessible at `http://[your-domain]/admin/[BULL_AUTH_KEY]/queues`. 
