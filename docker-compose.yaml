@@ -94,6 +94,21 @@ services:
       - backend
     command: redis-server --bind 0.0.0.0
 
+  # UI service (optional, can be commented out if not needed)
+  ui:
+    build: apps/ui/ingestion-ui
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./apps/ui/ingestion-ui:/app
+      - /app/node_modules
+    depends_on:
+      - api
+    networks:
+      - backend
+
 networks:
   backend:
     driver: bridge

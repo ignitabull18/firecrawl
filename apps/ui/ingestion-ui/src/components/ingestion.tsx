@@ -16,11 +16,12 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { FIRECRAWL_API_URL, FIRECRAWL_API_KEY, DEFAULT_URLS_PER_PAGE } from "@/config";
 
 //! Hardcoded values (not recommended for production)
 //! Highly recommended to move all Firecrawl API calls to the backend (e.g. Next.js API route)
-const FIRECRAWL_API_URL = "https://api.firecrawl.dev"; // Replace with your actual API URL whether it is local or using Firecrawl Cloud
-const FIRECRAWL_API_KEY = "fc-YOUR_API_KEY"; // Replace with your actual API key
+// const FIRECRAWL_API_URL = "https://api.firecrawl.dev"; // Replace with your actual API URL whether it is local or using Firecrawl Cloud
+// const FIRECRAWL_API_KEY = "fc-YOUR_API_KEY"; // Replace with your actual API key
 
 interface FormData {
   url: string;
@@ -102,14 +103,14 @@ export default function FirecrawlComponent() {
   const [showCrawlStatus, setShowCrawlStatus] = useState<boolean>(false);
   const [isScraping, setIsScraping] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const urlsPerPage = 10;
+  const urlsPerPage = DEFAULT_URLS_PER_PAGE;
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (loading) {
       setShowCrawlStatus(true);
       timer = setInterval(() => {
-        setElapsedTime((prevTime) => prevTime + 1);
+        setElapsedTime((prevTime: number) => prevTime + 1);
       }, 1000);
     }
     return () => {
@@ -119,7 +120,7 @@ export default function FirecrawlComponent() {
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prevData) => ({
+    setFormData((prevData: FormData) => ({
       ...prevData,
       [name]: type === "checkbox" ? checked : value,
     }));
@@ -148,10 +149,10 @@ export default function FirecrawlComponent() {
             url: formData.url,
             crawlerOptions: {
               includes: formData.includePaths
-                ? formData.includePaths.split(",").map((p) => p.trim())
+                ? formData.includePaths.split(",").map((p: string) => p.trim())
                 : undefined,
               excludes: formData.excludePaths
-                ? formData.excludePaths.split(",").map((p) => p.trim())
+                ? formData.excludePaths.split(",").map((p: string) => p.trim())
                 : undefined,
               maxDepth: formData.maxDepth
                 ? parseInt(formData.maxDepth)
