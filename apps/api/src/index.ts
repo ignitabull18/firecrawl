@@ -78,6 +78,10 @@ app.get("/test", async (req, res) => {
   res.send("Hello, world!");
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
 // register router
 app.use(v0Router);
 app.use("/v1", v1Router);
