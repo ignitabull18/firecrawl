@@ -80,7 +80,7 @@ services:
       - "${PORT:-3003}:${INTERNAL_PORT:-3003}"
     command: [ "pnpm", "run", "start:production" ]
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:${INTERNAL_PORT:-3003}/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:${INTERNAL_PORT:-3003}/health"]
       interval: 30s
       timeout: 10s
       retries: 3
